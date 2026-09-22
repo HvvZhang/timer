@@ -1,0 +1,9 @@
+# Windows 批处理是 GBK + CRLF 编码，禁止 Git 做任何换行或编码转换，
+# 否则换电脑（或 CI 检出）后 .bat 会乱码、甚至打不开
+*.bat -text
+*.cmd -text
+
+# 二进制文件，明确标记避免被当文本处理
+*.db  -text
+*.png -text
+*.zip -text

@@ -1,0 +1,31 @@
+# ============================================================
+#  jijin 项目 · Git 忽略清单
+# ============================================================
+
+# ---- 便携运行环境（38MB，不进仓库；换电脑用 setup_runtime.py 重建或直接拷文件夹）----
+runtime/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---- SQLite 临时文件（真正的数据在 data/funds.db 里）----
+*.db-wal
+*.db-shm
+
+# ---- 本地临时文件 / 调试产物 ----
+_*
+fund_tracker/_*
+summary.md
+fetch.log
+
+# ---- WorkBuddy 项目记忆（含本机绝对路径，不进公开仓库）----
+.workbuddy/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

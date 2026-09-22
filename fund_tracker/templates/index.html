@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>基金限购额度 · 每日记录</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div>
+      <h1>基金限购额度 · 每日记录</h1>
+      <p class="sub">数据来源：天天基金网 fund.eastmoney.com ｜ 共 <span id="fundCount">0</span> 只 QDII / 指数基金（标普 · 纳指100 · 纳指科技 · 主动）</p>
+    </div>
+    <div class="brand-badge">QDII 额度盯盘</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 状态栏 -->
+  <section class="panel toolbar">
+    <div class="tool-left">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">正在加载…</span>
+      <span class="sep">|</span>
+      <span id="recordInfo" class="muted"></span>
+    </div>
+    <div class="tool-right">
+      <button id="btnFetch" class="btn primary">立即抓取</button>
+      <button id="btnExport" class="btn">导出 CSV</button>
+    </div>
+  </section>
+
+  <!-- 总览 -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>额度总览</h2>
+      <div class="catbar" id="catBar"></div>
+      <span class="hint" id="overviewDate"></span>
+    </div>
+    <div class="table-scroll">
+      <table class="grid" id="tblOverview">
+        <thead>
+          <tr>
+            <th>代码</th>
+            <th>基金名称</th>
+            <th>分类</th>
+            <th>申购状态</th>
+            <th class="num sortable" data-sort="limit" data-default="desc" title="点击排序：额度从多到少 / 从少到多">单日限购额度<span class="sort-ind"></span></th>
+            <th class="sortable" data-sort="change" data-default="desc" title="点击排序：额度变化幅度（变大 / 变小）">额度变化<span class="sort-ind"></span></th>
+            <th class="num">单位净值</th>
+            <th class="num sortable" data-sort="growth" data-default="desc" title="点击排序：日涨幅">日涨幅<span class="sort-ind"></span></th>
+            <th class="num sortable" data-sort="scale" data-default="desc" title="点击排序：规模">规模(亿)<span class="sort-ind"></span></th>
+            <th>净值日期</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 变动提醒 -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>额度变动提醒</h2>
+      <span class="hint">最新一条记录 vs 上一条记录</span>
+    </div>
+    <div id="changes" class="changes"></div>
+  </section>
+
+  <!-- 历史 -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>历史记录</h2>
+      <div class="filters">
+        <select id="selFund"></select>
+        <select id="selRange">
+          <option value="30">近 30 天</option>
+          <option value="90">近 90 天</option>
+          <option value="365" selected>近 1 年</option>
+          <option value="0">全部</option>
+        </select>
+      </div>
+    </div>
+    <div id="trend" class="trend-box"></div>
+    <div class="table-scroll">
+      <table class="grid" id="tblHistory">
+        <thead>
+          <tr>
+            <th>记录日期</th>
+            <th>基金</th>
+            <th>申购状态</th>
+            <th class="num">单日限购额度</th>
+            <th class="num">单位净值</th>
+            <th class="num">日涨幅</th>
+            <th class="num">规模(亿)</th>
+            <th>净值日期</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    本页数据来自公开网页，仅供个人记录参考，不构成任何投资建议。额度以基金公司公告为准。
+  </footer>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
