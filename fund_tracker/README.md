@@ -92,6 +92,15 @@ cd /d D:\GREEN\项目\jijin\fund_tracker
 **不依赖你的电脑**：定时跑的是一台 GitHub 服务器，电脑关机、休眠、拔网线都不影响。
 抓到的数据自动提交回仓库，日报同时发布到 GitHub Pages，手机上随时能看。
 
+### 第一次部署（三步）
+
+1. **建仓库**：GitHub 网页右上角 `+` → New repository → 填名字（如 `jijin`）→
+   建的时候**不要**勾 Add a README / .gitignore / license（要的是空仓库）；
+2. **上传**：双击项目根目录的 `上传到GitHub.bat`，把仓库地址粘进去回车，按提示登录一次即可；
+3. **开 Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch`、分支 `main`、目录 `/docs`，Save。
+
+之后就不用管了。想确认能不能跑通，去 Actions 页面点一次 Run workflow。
+
 ### 运行流程
 
 ```
