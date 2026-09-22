@@ -87,34 +87,83 @@ cd /d D:\GREEN\项目\jijin\fund_tracker
 
 ---
 
-## 三、每日自动记录（两种方式，任选或都用）
+## 三、每日自动记录（GitHub Actions）
 
-### 方式 1：程序内置定时器
-`config.json` 里的 `fetch_times` 控制，程序运行期间到点自动抓取：
+**不依赖你的电脑**：定时跑的是一台 GitHub 服务器，电脑关机、休眠、拔网线都不影响。
+抓到的数据自动提交回仓库，日报同时发布到 GitHub Pages，手机上随时能看。
 
-```json
-{
-  "port": 5088,
-  "fetch_times": ["09:30", "21:30"],
-  "enable_scheduler": true,
-  "workers": 8
-}
+### 运行流程
+
+```
+GitHub 定时触发
+   ↓
+检出仓库 → 装 Python → 抓 50 只基金（run_fetch.py）
+   ↓
+生成日报 + 归档目录（make_report.py）→ 复制到 docs/
+   ↓
+把 data/ + report/ + docs/ 提交回仓库 → GitHub Pages 自动更新
 ```
 
-- `09:30` —— 抓当天的**限购额度与申购状态**（基金公司一般上午更新）
-- `21:30` —— 抓当天的**单位净值**（净值一般晚上更新）
-- 同一天重复抓取只更新当天记录，不会产生重复行
+### 时间点
 
-### 方式 2：Windows 计划任务（程序不开也能记录）
+GitHub 的 cron **一律按 UTC 算**，北京时间 = UTC + 8：
+
+| 北京时间 | UTC cron | 抓什么 |
+|---|---|---|
+| 09:35 | `35 1 * * *` | 当天的限购额度与申购状态 |
+| 21:30 | `30 13 * * *` | 当天的单位净值 |
+
+改时间就编辑 `.github/workflows/daily.yml` 里的 `cron`（记得减 8 小时）。
+
+### 想立刻跑一次
+
+仓库 → **Actions** 标签页 → 左侧「基金限购额度 · 每日抓取」→ 右侧 **Run workflow**。
+跑完在运行页面有一份 Markdown 摘要：成功几只、额度变动、额度分布、全部明细，不用下载文件也能看结果。
+
+### 看结果的三个地方
+
+| 方式 | 地址 |
+|---|---|
+| 归档页（手机上也能看） | `https://<用户名>.github.io/<仓库名>/` |
+| 最新日报固定链接 | `https://<用户名>.github.io/<仓库名>/latest.html` |
+| 原始数据库 | 仓库里的 `fund_tracker/data/funds.db` |
+
+### 本地网页仍然可用
+
+Actions 会把数据提交回仓库，本地 `git pull` 后就拿到最新数据，
+双击 `一键启动.bat` 用网页查看 / 筛选 / 导出 CSV 照旧（只是网页不再自己定时抓）。
+
+### 注意事项
+
+| 事项 | 说明 |
+|---|---|
+| **首次要手动开 Pages** | 仓库 Settings → Pages → Source 选 `Deploy from a branch`，分支 `main`、目录 `/docs`，保存 |
+| **60 天不活动会被停用** | GitHub 规则：仓库连续 60 天没有任何推送会暂停定时任务。本项目每次跑都会提交数据，正常不会触发；万一被停用 GitHub 会发邮件，去 Actions 页面点一下 Enable 即可 |
+| **不保证精确到分钟** | 高峰期可能推迟几分钟到几十分钟，偶尔会跳过某一次；同一天的重复抓取不会产生重复记录 |
+| **私有仓库有额度** | 免费账号私有仓库每月 2000 分钟，本项目一天两次、每次约 2 分钟，一个月约 120 分钟，够用。公开仓库完全免费 |
+
+### 本地手动抓取（偶尔用）
+
+双击 `一键抓取.bat`，或：
+
+```
+cd fund_tracker
+..\runtime\python\python.exe run_fetch.py
+..\runtime\python\python.exe make_report.py
+```
+
+> 本地跑之前先 `git pull`，避免和 Actions 提交的数据打架（Actions 侧也带了 `git pull --rebase` 兜底）。
+
+### 备用方案：Windows 计划任务
+
 以管理员身份运行 CMD：
 
 ```
 schtasks /create /tn "基金额度每日记录" /tr "\"D:\GREEN\项目\jijin\runtime\python\python.exe\" \"D:\GREEN\项目\jijin\fund_tracker\run_fetch.py\"" /sc daily /st 21:30 /f
 ```
 
-### 方式 3：WorkBuddy 定时任务
-已配置**每天 21:30** 自动执行 `run_fetch.py` + `make_report.py`，不开网页也能累积记录。
-（当晚净值已更新完，额度与净值可一次抓全。）
+> 原来的两套定时已关闭：`config.json` 的 `enable_scheduler` 改成了 `false`，
+> WorkBuddy 的定时任务已删除。需要恢复哪一套说一声即可。
 
 ---
 
@@ -136,25 +185,32 @@ schtasks /create /tn "基金额度每日记录" /tr "\"D:\GREEN\项目\jijin\run
 
 ```
 jijin/                          <- 整个文件夹可以直接拷到别的电脑
+├── .github/workflows/daily.yml GitHub Actions 定时任务（每天 09:35 / 21:30 抓取）
+├── .gitignore / .gitattributes 仓库忽略与换行规则
+├── docs/                       GitHub Pages 目录（由 Actions 生成、提交）
 ├── 一键启动.bat                启动网页 + 自动开浏览器
 ├── 一键抓取.bat                抓一次 + 生成日报
 ├── 环境自检.bat                环境体检
 ├── setup_runtime.py            装配脚本（runtime 损坏时重跑它即可重建）
 ├── runtime/                    便携运行环境（Python 3.13.12 + flask + requests）
-│   └── python/python.exe
+│   └── python/python.exe       ↑ 已加入 .gitignore，不进仓库（38MB）
 └── fund_tracker/               业务代码与数据
-    ├── app.py                  Flask 应用（页面 + API + 内置定时器）
+    ├── app.py                  Flask 应用（页面 + API）
     ├── fetcher.py              天天基金抓取与解析
     ├── db.py                   SQLite 存储层
-    ├── run_fetch.py            单次抓取（供计划任务/定时器调用）
-    ├── make_report.py          生成静态日报 report/YYYY-MM-DD.html
+    ├── run_fetch.py            单次抓取（供 Actions / 批处理调用）
+    ├── make_report.py          生成静态日报 report/YYYY-MM-DD.html + index.html
+    ├── ci_summary.py           把抓取结果整理成 Markdown 摘要（Actions 运行摘要用）
     ├── funds.txt               基金清单（代码,分类 —— 改这里增删基金与分类）
-    ├── config.json             端口、定时时间、并发数
+    ├── config.json             端口、并发数、内置定时器开关
     ├── templates/index.html
     ├── static/style.css / app.js
-    ├── data/funds.db           每日记录数据库
-    └── report/                 静态日报归档
+    ├── data/funds.db           每日记录数据库（会提交回仓库）
+    └── report/                 静态日报归档（会提交回仓库）
 ```
+
+> `runtime/` 体积 38MB，**不提交到仓库**——它只是本地跑网页用的。
+> GitHub Actions 那边由 `actions/setup-python` 现场装标准版 Python，不需要这个目录。
 
 ### 换电脑怎么操作
 
