@@ -38,9 +38,14 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/3] 推送数据
-echo      首次会弹出浏览器让你登录 GitHub，登录一次以后就不用了
-"%GIT%" push -u origin main
+echo [3/3] 推送数据（首次要登录一次，以后不用了）
+echo.
+echo   * 屏幕会给出一个 8 位配对码，长这样：  XXXX-XXXX
+echo   * 并会自动打开浏览器；要是没打开，就自己访问：
+echo         https://github.com/login/device
+echo   * 把配对码填进去，点 Continue 再点 Authorize，就完了。
+echo.
+"%GIT%" -c credential.gitHubAuthModes=device push -u origin main
 if errorlevel 1 goto :failed
 
 echo.
@@ -74,10 +79,13 @@ echo.
 echo ================================================================
 echo   出错了，常见原因
 echo ================================================================
+echo   - 配对码输错或等太久失效：重跑一次本文件，会重新给一个码
+echo   - 浏览器上不去 github.com：确认代理开着，能打开 GitHub 网页
 echo   - 仓库地址写错（要的是 https://github.com/用户名/仓库名.git）
-echo   - 登录窗口被关掉了：重跑一次本文件，在浏览器里点允许
 echo   - 远程仓库不是空的：建仓库时勾了 README，删掉那个文件再试
-echo   - 网络连不上 GitHub：挂上代理再试
+echo.
+echo   万一配对码这条路也走不通，把本窗口的报错发给 AI，
+echo   会改用「个人访问令牌」的方式，也能推上去。
 echo.
 pause
 exit /b 1
